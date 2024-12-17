@@ -1,0 +1,106 @@
+version: "3.8"
+
+services:
+    config-1:
+        image: mongo:latest
+        container_name: config-1
+        command: mongod --configsvr --replSet rs-config-server --port 27017
+
+    config-2:
+        image: mongo:latest
+        container_name: config-2
+        command: mongod --configsvr --replSet rs-config-server --port 27017
+
+    config-3:
+        image: mongo:latest
+        container_name: config-3
+        command: mongod --configsvr --replSet rs-config-server --port 27017
+
+    shard-1a:
+        image: mongo:latest
+        container_name: shard-1a
+        command: mongod --shardsvr --replSet rs-shard-1 --port 27017
+
+    shard-1b:
+        image: mongo:latest
+        container_name: shard-1b
+        command: mongod --shardsvr --replSet rs-shard-1 --port 27017
+
+    shard-2a:
+        image: mongo:latest
+        container_name: shard-2a
+        command: mongod --shardsvr --replSet rs-shard-2 --port 27017
+
+    shard-2b:
+        image: mongo:latest
+        container_name: shard-2b
+        command: mongod --shardsvr --replSet rs-shard-2 --port 27017
+
+    router:
+        image: mongo:latest
+        container_name: router
+        command: mongos --configdb rs-config-server/config-1:27017,config-2:27017,config-3:27017 --bind_ip_all --port 27017
+        ports:
+            - "27100:27017"
+        volumes:
+            - type: bind
+              source: ./data
+              target: /app/data
+            - type: bind
+              source: ./scripts
+              target: /app/scripts
+    #    command: mongos --port 27017 --configdb configserver/config01:27017,config02:27017,config03:27017 --bind_ip_all
+    #    ports:
+    #       - "27017:27017"
+    #database2:
+    #    image: mongodb/mongodb-community-server:latest
+    #    container_name: mongodb2
+    #    expose:
+    #        - 27018
+    #    volumes:
+    #        - type: bind
+    #          source: ./data
+    #           target: /data
+    #         - type: bind
+    #           source: ./init_tables.sh
+    #           target: /init.sh
+    #         - type: bind
+    #          source: ./init_dbms.py
+    #              target: /init.py
+    #        networks:
+    #            - data-center-network
+    #        environment:
+    #            MONGODB_INITDB_ROOT_USERNAME: admin
+    #            MONGODB_INITDB_ROOT_PASSWORD: admin
+
+    #cache:
+    #    image: redis:7.2-alpine
+    #    container_name: redis
+    #    expose:
+    #        - 6379
+    #    networks:
+    #        - data-center-network
+
+    #create_tables:
+    #    image: python:3.9-alpine
+    #    container_name: post_build
+    #    depends_on:
+    #        - database1
+    #    command: [ "sh", "-c", "pip install pymongo && /init.sh" ]
+    #    restart: "no"
+    #    volumes:
+    #        #- type: bind
+    #        #  source: ./data
+    #        #  target: /data
+    #        - type: bind
+    #          source: ./init_tables.sh
+    #          target: /init.sh
+    #        - type: bind
+    #          source: ./init_dbms.py
+    #          target: /init.py
+    #    networks:
+    #        - data-center-network
+
+networks:
+    data-center-network:
+        driver: bridge
