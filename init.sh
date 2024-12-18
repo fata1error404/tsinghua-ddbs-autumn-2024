@@ -56,23 +56,14 @@ docker exec -it router mongosh /app/scripts/init-tables.js
 echo -e "\n\n$(tput bold dim)Bulk loading data..$(tput sgr 0)"
 echo "$(tput dim)User$(tput sgr 0)"
 docker exec -it router sh -c "mongoimport -d data-center -c User < /app/data/user.dat"
-echo "$(tput dim)Article$(tput sgr 0)"
-docker exec -it router sh -c "mongoimport -d data-center -c Article < /app/data/article.dat"
-echo "$(tput dim)Read$(tput sgr 0)"
-docker exec -it router mongosh /app/scripts/init-read.js
-docker exec -it router sh -c "mongoimport -d data-center -c Temp < /app/data/read_with_regions.dat"
-docker exec -it router mongosh --eval "db.getSiblingDB('data-center').Temp.aggregate([
-    {
-        \$merge: {
-            into: 'Read',
-            whenMatched: 'fail',
-            whenNotMatched: 'insert'
-        }
-    }
-])"
+# echo "$(tput dim)Article$(tput sgr 0)"
+# docker exec -it router sh -c "mongoimport -d data-center -c Article < /app/data/article.dat"
+# echo "$(tput dim)Read$(tput sgr 0)"
+# docker exec -it router mongosh /app/scripts/init-read.js
+# docker exec -it router sh -c "mongoimport -d data-center -c Temp < /app/data/read_with_regions.dat"
 
 echo -e "\n$(tput bold dim)Shard distribution info:$(tput sgr 0)"
-docker exec -it router mongosh --eval "db.getSiblingDB('data-center').Read.getShardDistribution()"
+docker exec -it router mongosh --eval "db.getSiblingDB('data-center').User.getShardDistribution()"
 # docker exec -it router mongosh --eval "db.getSiblingDB('data-center').printShardingStatus()"
 
 echo -e "\n\n$(tput setaf 2)Initialization DONE$(tput sgr 0)"

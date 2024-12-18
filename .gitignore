@@ -4,6 +4,6 @@ commands.txt
 
 Dockerfile.dev
 
-package.json
+frontend/node_modules/
 
 test.py

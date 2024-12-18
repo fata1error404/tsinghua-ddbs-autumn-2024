@@ -28,29 +28,23 @@ adminRef.runCommand({
 });
 
 // Article
-adminRef.runCommand({
-    split: `${dbName}.Article`,
-    middle: { category: "technology" }
-});
+// adminRef.runCommand({
+//     split: `${dbName}.Article`,
+//     middle: { category: "technology" }
+// });
 
-adminRef.runCommand({
-    moveChunk: `${dbName}.Article`,
-    find: { category: "science" },
-    to: "rs-shard-1"
-});
+// adminRef.runCommand({
+//     moveChunk: `${dbName}.Article`,
+//     find: { category: "science" },
+//     to: "rs-shard-1"
+// });
 
-adminRef.runCommand({
-    moveChunk: `${dbName}.Article`,
-    find: { category: "technology" },
-    to: "rs-shard-2"
-});
+// adminRef.runCommand({
+//     moveChunk: `${dbName}.Article`,
+//     find: { category: "technology" },
+//     to: "rs-shard-2"
+// });
 
 print("Assigning chunks to shards.. Done");
 //printjson(db.adminCommand({ listShards: 1 }));
 //printjson(db.adminCommand({ listDatabases: 1 }))
-
-const fs = require('fs');
-const inputFile = "/app/data/user.dat";
-const data = JSON.parse(fs.readFileSync(inputFile));
-
-print(Object.keys(data).length)

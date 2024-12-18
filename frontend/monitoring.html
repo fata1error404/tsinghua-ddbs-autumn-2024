@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Monitoring </title>
+
+    <style>
+        .text {
+            width: 23rem;
+            font-size: 1.3rem;
+            margin-left: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .button {
+            position: absolute;
+            left: calc(50% - 7.5rem);
+            bottom: 6rem;
+            width: 15rem;
+            border: none;
+            border-radius: 1rem;
+            padding: 1rem 2rem;
+
+            font-size: 1.5rem;
+        }
+
+        .back_button {
+            background-color: transparent;
+            position: relative;
+            top: 1rem;
+            right: -7.5rem;
+            width: 4rem;
+            height: 4rem;
+            border: none;
+            border-radius: 50%;
+        }
+
+        td,
+        th {
+            height: 1.7rem;
+        }
+    </style>
+
+    <script>
+        async function checkRouterStatus() {
+            const timeout = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error("Offline")), 5000);
+            });
+
+            const fetchStatus = fetch("/router-status")
+                .then((response) => response.json());
+
+            try {
+                const data = await Promise.race([fetchStatus, timeout]);
+                if (data.status === "ok") {
+                    document.getElementById("status").innerText = `Online`;
+                    document.getElementById("status").style.color = "green";
+
+                    document.getElementById("time").innerHTML = `<span style="color: grey"> Uptime: </span> ${data.uptime} seconds`;
+
+                    if (data.shard1.status === "ok") {
+                        document.getElementById("dbms1_status").innerHTML = `DBMS1: <span style="color: green; font-size: 0.9rem;">Running</span>`;
+                        document.getElementById("dbms1_resources").innerHTML = `
+                        DBMS1: disk usage – <span style="color: black"> ${data.shard1.size} MB </span> </br> 
+                        <span style="margin-left: 3.9rem"> RAM usage – <span style="color: black"> ${data.shard1.ram} % </span> </span>`;
+                    } else {
+                        document.getElementById("dbms1_status").innerHTML = `DBMS1: <span style="color: red; font-size: 0.9rem;">Not Running</span>`;
+                    }
+
+                    if (data.shard2.status === "ok") {
+                        document.getElementById("dbms2_status").innerHTML = `DBMS2: <span style="color: green; font-size: 0.9rem;">Running</span>`;
+                        document.getElementById("dbms2_resources").innerHTML = `
+                        DBMS2: disk usage – <span style="color: black"> ${data.shard2.size} MB </span> </br> 
+                        <span style="margin-left: 3.9rem"> RAM usage – <span style="color: black"> ${data.shard2.ram} % </span> </span>`;
+                    } else {
+                        document.getElementById("dbms2_status").innerHTML = `DBMS2: <span style="color: red; font-size: 0.9rem;">Not Running</span>`;
+                    }
+
+                    if (data.shard2.status === "ok" && data.shard2.status === "ok") {
+                        document.getElementById("user").innerHTML = `
+                        <span style="color: grey"> Users: </span> ${data.user_docs} <span style="font-size: 0.8rem;"> (${data.shard1.users / data.user_docs * 100}% in DBMS1 and ${data.shard2.users / data.user_docs * 100}% in DBMS2) </span>`;
+                    }
+
+                    document.getElementById("title1").style.display = "block";
+                    document.getElementById("title2").style.display = "block";
+                    document.getElementById("title3").style.display = "block";
+                    document.getElementById("operations").innerHTML = `
+                    <span style="color: grey"> insert: </span> ${data.opcounters.insert} </br> 
+                    <span style="color: grey"> query: </span> ${data.opcounters.query} </br> 
+                    <span style="color: grey"> update: </span> ${data.opcounters.update} </br> 
+                    <span style="color: grey"> delete: </span> ${data.opcounters.delete} </br> 
+                    <span style="color: grey"> command: </span> ${data.opcounters.command}`;
+
+                    document.getElementById("total_size").innerHTML = `<span style="color: grey"> Total disk usage: </span> ${data.total_size} MB`;
+
+                } else {
+                    document.getElementById("status").innerText = `Error: ${data.error}`;
+                }
+            } catch (err) {
+                document.getElementById("status").innerText = `${err.message}`;
+                document.getElementById("status").style.color = "red";
+            }
+        }
+
+        window.onload = checkRouterStatus;
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <div
+            style="display: flex; flex-direction: column; align-items: center; width: 26rem; height: 50rem; border: 0.6rem solid #f0f0f0; border-radius: 3rem; margin-top: 2rem;">
+            <div style="display: flex;">
+                <form method="GET" action="/monitoring">
+                    <button class="back_button" style="right: 7.5rem; top: 1.2rem">
+                        <i class="fa fa-refresh" style="color: #f0f0f0; font-size: 2.5rem;"></i>
+                    </button>
+                </form>
+
+                <button class="back_button" id="back">
+                    <i class="fa fa-arrow-left" style="color: #f0f0f0; font-size: 2.5rem;"></i>
+                </button>
+            </div>
+
+            <script type="text/javascript">
+                document.getElementById("back").onclick = function () {
+                    location.href = "http://localhost:3000/";
+                };
+            </script>
+
+            <p style="font-size: 2rem; font-weight: 700; margin-top: 3rem;"> Database monitoring </p>
+
+            <div style="margin-right: auto; padding-left: 1.5rem; margin-top: -2rem;">
+                <p style="font-size: 1.3rem;"> Running status: </p>
+                <p id="status" style="font-size: 1.1rem; font-weight: 600; padding-left: 8.5rem; margin-top: -2.6rem;">
+                    Checking status..
+                </p>
+
+                <div id="time" style="margin-top: -0.5rem;"> </div>
+                <div id="dbms1_status" style="color: grey; margin-top: 0.5rem;"> </div>
+                <div id="dbms2_status" style="color: grey; margin-top: 0.5rem;"> </div>
+
+                <p id="title1" style="display: none; font-size: 1.3rem;"> Operations </p>
+                <div id="operations" style="line-height: 1.3rem; margin-top: -1rem;"> </div>
+
+                <p id="title2" style="display: none; font-size: 1.3rem;"> Resource Memory Usage </p>
+                <div id="total_size" style="margin-top: -1rem;"> </div>
+                <div id="dbms1_resources" style="color: darkgrey; margin-top: 0.5rem; line-height: 1.3rem;"> </div>
+                <div id="dbms2_resources" style="color: darkgrey; margin-top: 0.5rem; line-height: 1.3rem;"> </div>
+
+                <p id="title3" style="display: none; font-size: 1.3rem;"> Data distribution </p>
+                <div id="user" style="margin-top: -1rem;"> </div>
+                <div id="article" style="color: grey; margin-top: 0.2rem"> Articles: </div>
+                <div id="read" style="color: grey; margin-top: 0.2rem"> Reads: </div>
+                <div id="be_read" style="color: grey; margin-top: 0.2rem"> Be-reads: </div>
+                <div id="popular_rank" style="color: grey; margin-top: 0.2rem"> Popular rank: </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
