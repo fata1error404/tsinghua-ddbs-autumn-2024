@@ -8,18 +8,18 @@ userCollection.find().forEach(doc => {
 });
 
 adminRef.runCommand({
-    split: `${dbName}.Temp`,
+    split: `${dbName}.Read`,
     middle: { region: "Hong Kong" }
 });
 
 adminRef.runCommand({
-    moveChunk: `${dbName}.Temp`,
+    moveChunk: `${dbName}.Read`,
     find: { region: "Beijing" },
     to: "rs-shard-1"
 });
 
 adminRef.runCommand({
-    moveChunk: `${dbName}.Temp`,
+    moveChunk: `${dbName}.Read`,
     find: { region: "Hong Kong" },
     to: "rs-shard-2"
 });

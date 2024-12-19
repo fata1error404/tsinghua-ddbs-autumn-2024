@@ -2,7 +2,7 @@
 
 echo "$(tput bold)Initialization script running."
 echo -e "$(tput dim)Deleting old Docker containers:$(tput sgr 0)\n"
-docker rm -vf $(docker ps -a -q)
+docker rm -vf $(docker ps -a -q | grep -v $(docker ps -a -q --filter name=frontend))
 
 echo -e "\n\n\n$(tput bold dim)Starting Docker containers..$(tput sgr 0)"
 docker compose up -d
@@ -53,17 +53,33 @@ sleep 10
 docker exec -it router mongosh /app/scripts/init-tables.js
 
 
+
+# Loading data into tables
 echo -e "\n\n$(tput bold dim)Bulk loading data..$(tput sgr 0)"
 echo "$(tput dim)User$(tput sgr 0)"
 docker exec -it router sh -c "mongoimport -d data-center -c User < /app/data/user.dat"
-# echo "$(tput dim)Article$(tput sgr 0)"
-# docker exec -it router sh -c "mongoimport -d data-center -c Article < /app/data/article.dat"
-# echo "$(tput dim)Read$(tput sgr 0)"
-# docker exec -it router mongosh /app/scripts/init-read.js
-# docker exec -it router sh -c "mongoimport -d data-center -c Temp < /app/data/read_with_regions.dat"
+
+echo -e "\n$(tput dim)Article$(tput sgr 0)"
+docker exec -it router sh -c "mongoimport -d data-center -c Article-main < /app/data/article.dat"
+echo "Duplicating category science into DBMS2.."
+docker exec -it router sh -c "jq 'select(.category == \"science\")' /app/data/article.dat > /app/data/filtered_article.dat"
+docker exec -it router sh -c "mongoimport -d data-center -c Article-science < /app/data/filtered_article.dat"
+
+echo -e "\n$(tput dim)Read$(tput sgr 0)"
+docker exec -it router mongosh /app/scripts/init-read.js
+docker exec -it router sh -c "mongoimport -d data-center -c Read < /app/data/read_with_regions.dat"
+
+echo -e "\n$(tput dim)Be-Read$(tput sgr 0)"
+docker exec -it router mongosh /app/scripts/init-be-read.js
+
+echo -e "\n$(tput dim)Popular-Rank$(tput sgr 0)"
+docker exec -it router mongosh /app/scripts/init-popular-rank.js
+
 
 echo -e "\n$(tput bold dim)Shard distribution info:$(tput sgr 0)"
-docker exec -it router mongosh --eval "db.getSiblingDB('data-center').User.getShardDistribution()"
+docker exec -it router mongosh --eval "db.getSiblingDB('data-center').getCollection('Popular-Rank').getShardDistribution()"
+# docker exec -it router mongosh --eval "db.getSiblingDB('data-center').getCollection('Be-Read-science').countDocuments()"
+# docker exec -it router mongosh --eval "db.getSiblingDB('data-center').ArticleScience.countDocuments()"
 # docker exec -it router mongosh --eval "db.getSiblingDB('data-center').printShardingStatus()"
 
 echo -e "\n\n$(tput setaf 2)Initialization DONE$(tput sgr 0)"
