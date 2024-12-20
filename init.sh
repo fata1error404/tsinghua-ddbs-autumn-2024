@@ -5,15 +5,13 @@ echo -e "$(tput dim)Deleting old Docker containers:$(tput sgr 0)\n"
 docker rm -vf $(docker ps -a -q | grep -v $(docker ps -a -q --filter name=frontend))
 
 echo -e "\n\n\n$(tput bold dim)Starting Docker containers..$(tput sgr 0)"
-docker-compose up -d
+docker compose up -d
 
-# Wait for containers to start
 sleep 10
 
-# Initialize MongoDB Replica Sets
-echo -e "\n\n$(tput bold dim)Initializing MongoDB replica sets.. $(tput sgr 0)"
+echo -e "\n\n$(tput bold dim)Initializing replica sets.. $(tput sgr 0)"
 echo -e "$(tput bold)Config server:$(tput sgr 0) \n"
-docker exec -it config-1 mongosh --eval "rs.initiate({
+docker exec -it config-1 mongosh --eval "rs.initiate({                                                                                                 
  _id: 'rs-config-server',
  configsvr: true,
  members: [
@@ -41,33 +39,17 @@ docker exec -it shard-2a mongosh --eval "rs.initiate({
  ]
 })"
 
-# Initialize Hadoop
-echo -e "\n\n$(tput bold dim)Initializing Hadoop HDFS.. $(tput sgr 0)"
-echo -e "$(tput bold)Formatting Namenode..$(tput sgr 0)"
-docker exec -it hadoop-namenode bash -c "hdfs namenode -format"
+containers=("config-1" "config-2" "config-3" "shard-1a" "shard-1b" "shard-2a" "shard-2b")
+echo -e "\n\n$(tput bold dim)Checking connectivity..$(tput sgr 0)\n"
+for container in "${containers[@]}" 
+do
+  output=$(docker exec -it $container mongosh --eval "db.runCommand({ ping: 1 })" --quiet | grep 'ok' | awk -v container="$container" -F ': ' '{print container "  ok : " $2}' | tr -d '},')
+  echo "$output"
+done
 
-echo -e "$(tput bold)Starting Hadoop HDFS..$(tput sgr 0)"
-docker exec -it hadoop-namenode bash -c "start-dfs.sh"
-
-# Wait for Hadoop services to start
+echo -e "\n\n\n$(tput bold dim)Setting up router..$(tput sgr 0)"
 sleep 10
-
-# Verify HDFS status
-echo -e "$(tput bold)Checking Hadoop HDFS status..$(tput sgr 0)"
-docker exec -it hadoop-namenode hdfs dfsadmin -report
-
-# MongoDB Router Setup
-echo -e "\n\n$(tput bold dim)Setting up MongoDB router..$(tput sgr 0)"
 docker exec -it router mongosh /app/scripts/init-tables.js
-
-<<<<<<< HEAD
-# Bulk Loading Data into MongoDB
-echo -e "\n\n$(tput bold dim)Bulk loading data into MongoDB..$(tput sgr 0)"
-docker exec -it router sh -c "mongoimport -d data-center -c User < /app/data/user.dat"
-
-echo -e "\n$(tput bold dim)Shard distribution info:$(tput sgr 0)"
-docker exec -it router mongosh --eval "db.getSiblingDB('data-center').User.getShardDistribution()"
-=======
 
 # Loading data into tables
 echo -e "\n\n$(tput bold dim)Bulk loading data..$(tput sgr 0)"
@@ -90,13 +72,28 @@ docker exec -it router mongosh /app/scripts/init-be-read.js
 echo -e "\n$(tput dim)Popular-Rank$(tput sgr 0)"
 docker exec -it router mongosh /app/scripts/init-popular-rank.js
 
-
 echo -e "\n$(tput bold dim)Shard distribution info:$(tput sgr 0)"
 docker exec -it router mongosh --eval "db.getSiblingDB('data-center').getCollection('Popular-Rank').getShardDistribution()"
-# docker exec -it router mongosh --eval "db.getSiblingDB('data-center').getCollection('Be-Read-science').countDocuments()"
-# docker exec -it router mongosh --eval "db.getSiblingDB('data-center').ArticleScience.countDocuments()"
-# docker exec -it router mongosh --eval "db.getSiblingDB('data-center').printShardingStatus()"
->>>>>>> 57992f386e691f7f35a034ded57d6af9e70f1f1d
+
+# Initializing Hadoop
+echo -e "\n\n$(tput bold dim)Initializing Hadoop HDFS.. $(tput sgr 0)"
+echo -e "$(tput bold)Formatting Namenode..$(tput sgr 0)"
+docker exec -it hadoop-namenode bash -c "hdfs namenode -format"
+
+echo -e "$(tput bold)Starting Namenode and Datanode..$(tput sgr 0)"
+docker exec -it hadoop-namenode bash -c "hdfs namenode &"
+docker exec -it hadoop-datanode bash -c "hdfs datanode &"
+
+sleep 10
+
+echo -e "$(tput bold dim)Verifying HDFS status..$(tput sgr 0)"
+docker exec -it hadoop-namenode bash -c "hdfs dfsadmin -report"
+
+echo -e "$(tput bold dim)Creating HDFS directories..$(tput sgr 0)"
+docker exec -it hadoop-namenode bash -c "hdfs dfs -mkdir -p /data"
+
+echo -e "$(tput bold dim)Uploading example data to HDFS..$(tput sgr 0)"
+docker exec -it hadoop-namenode bash -c "hdfs dfs -put /hadoop/data/example.txt /data"
 
 echo -e "\n\n$(tput setaf 2)Initialization DONE$(tput sgr 0)"
-echo "$(tput setaf 2 bold)MongoDB Sharded Cluster and Apache Hadoop HDFS are ready and running!$(tput sgr 0)"
+echo "$(tput setaf 2 bold)MongoDB Sharded Cluster and Apache Hadoop HDFS are ready and running on your local machine!$(tput sgr 0)"
