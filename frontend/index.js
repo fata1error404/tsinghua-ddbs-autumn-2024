@@ -140,6 +140,12 @@ app.get('/monitoring', (req, res) => {
 
 
 
+app.get('/query', (req, res) => {
+    res.sendFile(path.join(__dirname, 'query.html'));
+});
+
+
+
 app.get('/router-status', async (req, res) => {
     const status = await checkRouterStatus();
     res.json(status);

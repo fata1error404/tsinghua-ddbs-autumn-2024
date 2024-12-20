@@ -27,9 +27,15 @@
             <p style="font-size: 2rem; font-weight: 700; margin-top: 3rem;"> Data Center </p>
 
             <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <button class="button" id="manage"> Query </button>
+                <button class="button" id="query"> Query </button>
                 <button class="button" id="monitoring"> Monitoring </button>
             </div>
+
+            <script type="text/javascript">
+                document.getElementById("query").onclick = function () {
+                    location.href = "http://localhost:3000/query";
+                };
+            </script>
 
             <script type="text/javascript">
                 document.getElementById("monitoring").onclick = function () {

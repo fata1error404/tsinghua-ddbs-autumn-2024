@@ -102,8 +102,8 @@ echo -e "\n$(tput dim)Read$(tput sgr 0)"
 docker exec -it router mongosh /app/scripts/init-read.js
 docker exec -it router sh -c "mongoimport -d data-center -c Read < /app/data/read_with_regions.dat"
 
-echo -e "\n$(tput dim)Be-Read$(tput sgr 0)"
-docker exec -it router mongosh /app/scripts/init-be-read.js
+# echo -e "\n$(tput dim)Be-Read$(tput sgr 0)"
+# docker exec -it router mongosh /app/scripts/init-be-read.js
 
 echo -e "\n$(tput dim)Popular-Rank$(tput sgr 0)"
 docker exec -it router mongosh /app/scripts/init-popular-rank.js
