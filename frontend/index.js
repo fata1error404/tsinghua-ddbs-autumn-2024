@@ -21,15 +21,18 @@ async function checkRouterStatus() {
 
         try {
             await shard1Client.db("data-center").command({ ping: 1 });
-            const shard1Info = await shard1Client.db().admin().serverStatus();
-            const shard1DbList = await shard1Client.db().admin().listDatabases();
-            const user_count = await shard1Client.db("data-center").collection("User").countDocuments();
+            var shard1Info = await shard1Client.db().admin().serverStatus();
+            var shard1DbList = await shard1Client.db().admin().listDatabases();
+            var user_count = await shard1Client.db("data-center").collection("User").countDocuments();
+            var article_count = await shard1Client.db("data-center").collection("Article-main").countDocuments();
+            var read_count = await shard1Client.db("data-center").collection("Read").countDocuments();
+            var be_read_count = await shard1Client.db("data-center").collection("Be-Read").countDocuments();
 
             shard1 = {
                 status: "ok",
                 size: (shard1DbList.databases[2].sizeOnDisk / (1024 * 1024)).toFixed(2),
                 ram: (shard1Info.tcmalloc.generic.current_allocated_bytes / shard1Info.tcmalloc.generic.heap_size * 100).toFixed(2),
-                users: user_count
+                tables: { user_count, article_count, read_count, be_read_count }
             }
         } catch (err) {
             shard1 = {
@@ -42,15 +45,20 @@ async function checkRouterStatus() {
 
         try {
             await shard2Client.db("data-center").command({ ping: 1 });
-            const shard2Info = await shard2Client.db().admin().serverStatus();
-            const shard2DbList = await shard2Client.db().admin().listDatabases();
-            const user_count = await shard2Client.db("data-center").collection("User").countDocuments();
+            var shard2Info = await shard2Client.db().admin().serverStatus();
+            var shard2DbList = await shard2Client.db().admin().listDatabases();
+            var user_count = await shard2Client.db("data-center").collection("User").countDocuments();
+            var article_count = await shard2Client.db("data-center").collection("Article-main").countDocuments();
+            var science_count = await shard2Client.db("data-center").collection("Article-science").countDocuments();
+            var read_count = await shard2Client.db("data-center").collection("Read").countDocuments();
+            var be_read_count = await shard2Client.db("data-center").collection("Be-Read").countDocuments();
+            article_count += science_count;
 
             shard2 = {
                 status: "ok",
                 size: (shard2DbList.databases[2].sizeOnDisk / (1024 * 1024)).toFixed(2),
                 ram: (shard2Info.tcmalloc.generic.current_allocated_bytes / shard2Info.tcmalloc.generic.heap_size * 100).toFixed(2),
-                users: user_count
+                tables: { user_count, article_count, read_count, be_read_count }
             }
         } catch (err) {
             shard2 = {
@@ -66,7 +74,10 @@ async function checkRouterStatus() {
             uptime: serverInfo.uptime,
             total_size: (dbList.databases[2].sizeOnDisk / (1024 * 1024)).toFixed(2),
             opcounters: serverInfo.opcounters,
-            user_docs: shard1.users + shard2.users,
+            user_docs: shard1.tables.user_count + shard2.tables.user_count,
+            article_docs: shard1.tables.article_count + shard2.tables.article_count,
+            read_docs: shard1.tables.read_count + shard2.tables.read_count,
+            be_read_docs: shard1.tables.be_read_count + shard2.tables.be_read_count,
             shard1: shard1,
             shard2: shard2
         };
@@ -81,33 +92,33 @@ async function checkRouterStatus() {
 }
 
 
-async function removeShard(shardName) {
-    const uri = "mongodb://router:27017";
-    const client = new MongoClient(uri);
+// async function removeShard(shardName) {
+//     const uri = "mongodb://router:27017";
+//     const client = new MongoClient(uri);
 
-    try {
-        await client.connect();
-        const adminDb = client.db("admin");
+//     try {
+//         await client.connect();
+//         const adminDb = client.db("admin");
 
-        // Start draining the shard
-        console.log(`Starting removal of shard: ${shardName}`);
-        let result = await adminDb.command({ removeShard: shardName });
-        console.log(result);
+//         // Start draining the shard
+//         console.log(`Starting removal of shard: ${shardName}`);
+//         let result = await adminDb.command({ removeShard: shardName });
+//         console.log(result);
 
-        // Monitor the removal progress
-        while (result.state !== "completed") {
-            console.log(`Shard ${shardName} state: ${result.state}`);
-            result = await adminDb.command({ removeShard: shardName });
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Poll every 5 seconds
-        }
+//         // Monitor the removal progress
+//         while (result.state !== "completed") {
+//             console.log(`Shard ${shardName} state: ${result.state}`);
+//             result = await adminDb.command({ removeShard: shardName });
+//             await new Promise(resolve => setTimeout(resolve, 5000)); // Poll every 5 seconds
+//         }
 
-        console.log(`Shard ${shardName} successfully removed.`);
-    } catch (err) {
-        console.error(`Error removing shard: ${err.message}`);
-    } finally {
-        await client.close();
-    }
-}
+//         console.log(`Shard ${shardName} successfully removed.`);
+//     } catch (err) {
+//         console.error(`Error removing shard: ${err.message}`);
+//     } finally {
+//         await client.close();
+//     }
+// }
 
 // Usage
 // removeShard("rs-shard-1");

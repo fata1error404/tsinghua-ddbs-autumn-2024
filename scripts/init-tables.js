@@ -8,9 +8,10 @@ var adminRef = db.getSiblingDB("admin");
 
 sh.enableSharding(dbName);
 sh.shardCollection(`${dbName}.User`, { region: 1 });  // create the 'User' collection and shard it by 'region'
-sh.shardCollection(`${dbName}.Article`, { category: 1 });
-sh.shardCollection(`${dbName}.Read`, { uid: 1 });
-sh.shardCollection(`${dbName}.Temp`, { region: 1 });
+sh.shardCollection(`${dbName}.Read`, { region: 1 });
+sh.shardCollection(`${dbName}.Article-main`, { category: 1 });
+sh.shardCollection(`${dbName}.Be-Read`, { category: 1 });
+sh.shardCollection(`${dbName}.Popular-Rank`, { temporalGranularity: 1 });
 print("Creating empty sharded collections.. Done");
 
 // Pre-split chunks to optimize initial distribution (to avoid migrating chunks)
@@ -27,24 +28,22 @@ adminRef.runCommand({
     to: "rs-shard-2"
 });
 
+
 // Article
-// adminRef.runCommand({
-//     split: `${dbName}.Article`,
-//     middle: { category: "technology" }
-// });
+adminRef.runCommand({
+    split: `${dbName}.Article-main`,
+    middle: { category: "technology" }
+});
 
-// adminRef.runCommand({
-//     moveChunk: `${dbName}.Article`,
-//     find: { category: "science" },
-//     to: "rs-shard-1"
-// });
+db.adminCommand({
+    moveChunk: `${dbName}.Article-main`,
+    find: { category: "technology" },
+    to: "rs-shard-2"
+});
 
-// adminRef.runCommand({
-//     moveChunk: `${dbName}.Article`,
-//     find: { category: "technology" },
-//     to: "rs-shard-2"
-// });
+adminRef.runCommand({
+    movePrimary: "data-center",
+    to: "rs-shard-2"
+})
 
 print("Assigning chunks to shards.. Done");
-//printjson(db.adminCommand({ listShards: 1 }));
-//printjson(db.adminCommand({ listDatabases: 1 }))
