@@ -1,6 +1,7 @@
 version: "3.8"
 
 services:
+    # MongoDB Config Servers
     config-1:
         image: mongo:latest
         container_name: config-1
@@ -88,33 +89,37 @@ services:
               target: /app/
         networks:
             - data-center-network
-    #cache:
-    #    image: redis:7.2-alpine
-    #    container_name: redis
-    #    expose:
-    #        - 6379
-    #    networks:
-    #        - data-center-network
 
-    #create_tables:
-    #    image: python:3.9-alpine
-    #    container_name: post_build
-    #    depends_on:
-    #        - database1
-    #    command: [ "sh", "-c", "pip install pymongo && /init.sh" ]
-    #    restart: "no"
-    #    volumes:
-    #        #- type: bind
-    #        #  source: ./data
-    #        #  target: /data
-    #        - type: bind
-    #          source: ./init_tables.sh
-    #          target: /init.sh
-    #        - type: bind
-    #          source: ./init_dbms.py
-    #          target: /init.py
-    #    networks:
-    #        - data-center-network
+    # Hadoop Namenode
+    hadoop-namenode:
+        image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+        container_name: hadoop-namenode
+        environment:
+            - CLUSTER_NAME=hadoop-cluster
+        ports:
+            - "9870:9870" # HDFS Web UI
+            - "9000:9000" # HDFS Namenode RPC
+        volumes:
+            - type: bind
+              source: ./hadoop/data
+              target: /hadoop/data
+        networks:
+            - data-center-network
+
+    # Hadoop Datanode
+    hadoop-datanode:
+        image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+        container_name: hadoop-datanode
+        depends_on:
+            - hadoop-namenode
+        environment:
+            - CLUSTER_NAME=hadoop-cluster
+        volumes:
+            - type: bind
+              source: ./hadoop/data
+              target: /hadoop/data
+        networks:
+            - data-center-network
 
 networks:
     data-center-network:
