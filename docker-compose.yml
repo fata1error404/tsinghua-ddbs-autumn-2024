@@ -23,6 +23,7 @@ services:
         networks:
             - data-center-network
 
+    # MongoDB Shards
     shard-1a:
         image: mongo:latest
         container_name: shard-1a
@@ -51,6 +52,7 @@ services:
         networks:
             - data-center-network
 
+    # MongoDB Router
     router:
         image: mongo:latest
         container_name: router
@@ -75,20 +77,25 @@ services:
         networks:
             - data-center-network
 
+    # Frontend (Node.js Application)
     frontend:
-        image: node:20-alpine
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
         container_name: frontend
-        profiles:
-            - excluded
-        command: npm run dev --prefix /app
         ports:
-            - 3000:3000
+            - "3000:3000"
         volumes:
             - type: bind
               source: ./frontend
-              target: /app/
+              target: /app
         networks:
             - data-center-network
+        depends_on:
+            - redis
+            - router
+
+
 
     # Hadoop Namenode
     hadoop-namenode:
@@ -121,6 +128,21 @@ services:
         networks:
             - data-center-network
 
+    # Redis
+    redis:
+        image: redis:7.2-alpine
+        container_name: redis
+        ports:
+            - "6379:6379" # Default Redis port
+        networks:
+            - data-center-network
+        volumes:
+            - redis-data:/data
+        command: ["redis-server", "--appendonly", "yes"]
+
 networks:
     data-center-network:
         driver: bridge
+
+volumes:
+    redis-data:
