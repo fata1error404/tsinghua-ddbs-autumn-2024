@@ -79,10 +79,9 @@ services:
 
     # Frontend (Node.js Application)
     frontend:
-        build:
-            context: ./frontend
-            dockerfile: Dockerfile
+        image: node:20-alpine
         container_name: frontend
+        command: npm start --prefix /app
         ports:
             - "3000:3000"
         volumes:
@@ -91,12 +90,24 @@ services:
               target: /app
         networks:
             - data-center-network
-        depends_on:
-            - redis
-            - router
+        profiles:
+            - exclude
 
+    # Redis
+    redis:
+        image: redis:7.2-alpine
+        container_name: redis
+        command: [ "redis-server", "--appendonly", "yes" ]
+        ports:
+            - "6379:6379"
+        volumes:
+            - type: bind
+              source: ./data
+              target: /redis-data
+        networks:
+            - data-center-network
     # Hadoop Namenode
-    # hadoop-namenode:
+    # hadoop-namenode: 
     #     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     #     container_name: hadoop-namenode
     #     environment:
@@ -126,21 +137,6 @@ services:
     #     networks:
     #         - data-center-network
 
-    # Redis
-    redis:
-        image: redis:7.2-alpine
-        container_name: redis
-        ports:
-            - "6379:6379" # Default Redis port
-        networks:
-            - data-center-network
-        volumes:
-            - redis-data:/data
-        command: [ "redis-server", "--appendonly", "yes" ]
-
 networks:
     data-center-network:
         driver: bridge
-
-volumes:
-    redis-data:
