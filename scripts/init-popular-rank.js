@@ -4,8 +4,8 @@
 // weeks: 16
 // months: 3
 
-var timeBegin = 1506332297000;
-var timeEnd = 1516332287000;
+var timeBegin = 1506332297000
+var timeEnd = 1516332287000
 
 var dbName = "data-center";
 var adminRef = db.getSiblingDB("admin");
@@ -16,18 +16,23 @@ var popularRankCollection = db.getSiblingDB(dbName).getCollection('Popular-Rank'
 
 adminRef.runCommand({
     split: `${dbName}.Popular-Rank`,
-    middle: { temporalGranularity: "daily" }
+    middle: { temporalGranularity: "weekly" }
 });
 
 adminRef.runCommand({
-    moveChunk: `${dbName}.Popular-Rank`,
-    find: { temporalGranularity: "daily" },
-    to: "rs-shard-1"
+    split: `${dbName}.Popular-Rank`,
+    middle: { temporalGranularity: "monthly" }
 });
 
 adminRef.runCommand({
     moveChunk: `${dbName}.Popular-Rank`,
     find: { temporalGranularity: "weekly" },
+    to: "rs-shard-2"
+});
+
+adminRef.runCommand({
+    moveChunk: `${dbName}.Popular-Rank`,
+    find: { temporalGranularity: "monthly" },
     to: "rs-shard-2"
 });
 
@@ -42,16 +47,16 @@ var timeUnits = [
 
 print("Aggregating top read articles from the Read table..");
 timeUnits.forEach(function (unit) {
-    for (var dayStart = timeBegin; dayStart < timeEnd; dayStart += unit.interval) {
-        var dayEnd = dayStart + unit.interval;
+    for (var timeStart = timeBegin; timeStart < timeEnd; timeStart += unit.interval) {
+        var timeEndUnit = timeStart + unit.interval;
 
         var topArticles = readCollection.aggregate([
             {
                 $match: {
                     $expr: {
                         $and: [
-                            { $gte: [{ $toLong: "$timestamp" }, dayStart] },
-                            { $lt: [{ $toLong: "$timestamp" }, dayEnd] }
+                            { $gte: [{ $toLong: "$timestamp" }, timeStart] },
+                            { $lt: [{ $toLong: "$timestamp" }, timeEndUnit] }
                         ]
                     }
                 }
@@ -76,31 +81,18 @@ timeUnits.forEach(function (unit) {
             }
         ]).toArray();
 
-        var articleAidList = topArticles.map(article => article.aid);
+        var articleAidList = topArticles.map(function (article) {
+            return article.aid;
+        });
 
         if (articleAidList.length > 0) {
-            data.push({
-                timestamp: dayStart,
+            popularRankCollection.insertOne({
+                timestamp: timeStart,
                 temporalGranularity: unit.granularity,
                 articleAidList: articleAidList
             });
         }
     }
+
+    print(`Top-${unit.granularity} popular articles have been inserted into Popular-Rank.`);
 });
-
-var dailyData = data.filter(item => item.temporalGranularity === "daily");
-var weeklyAndMonthlyData = data.filter(item => item.temporalGranularity === "weekly" || item.temporalGranularity === "monthly");
-
-print("Inserting daily data into DBMS1..");
-if (dailyData.length > 0) {
-    popularRankCollection.bulkWrite(
-        dailyData.map(doc => ({ insertOne: { document: doc } }))
-    );
-}
-
-print("Inserting weekly and monthly data into DBMS2..");
-if (weeklyAndMonthlyData.length > 0) {
-    popularRankCollection.bulkWrite(
-        weeklyAndMonthlyData.map(doc => ({ insertOne: { document: doc } }))
-    );
-}

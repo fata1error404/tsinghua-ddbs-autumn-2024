@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Populate Be-Read </title>
+
+    <style>
+        .button {
+            position: absolute;
+            left: calc(50% - 7.5rem);
+            top: 47rem;
+            width: 15rem;
+            border: none;
+            border-radius: 1rem;
+            padding: 1rem 2rem;
+
+            font-size: 1.5rem;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <div
+            style="display: flex; flex-direction: column; align-items: center; width: 26rem; height: 50rem; border: 0.6rem solid #f0f0f0; border-radius: 3rem; margin-top: 2rem;">
+
+            <div style="text-align: left; margin-right: auto; margin-top: 3rem; padding-left: 2.5rem;"> Updating data in
+                Be-Read table, please
+                wait. </div>
+            <div id="status_div" style="width: 80%; font-size: 1.3rem; margin-top: 1rem;"></div>
+
+            <div id="extra_message" style="margin-top: 1rem; text-align: center; display: none;">
+                <p>Population process completed successfully! You can return to the homepage by clicking the button
+                    below.
+                </p>
+            </div>
+
+            <button class="button" id="home"> Home </button>
+
+            <script type="text/javascript">
+                document.getElementById("home").onclick = function () {
+                    location.href = "http://localhost:3000/";
+                };
+
+                const statusDiv = document.getElementById("status_div");
+                const homeButton = document.getElementById("home");
+                const extraMessage = document.getElementById("extra_message");
+
+                async function checkStatus() {
+                    try {
+                        const response = await fetch("http://localhost:3000/populate-status");
+                        const status = await response.json();
+
+                        statusDiv.innerHTML = `
+                    <span style="color: grey"> Status: </span> ${status.status} </br>
+                    <span style="color: grey"> Message: </span> ${status.message}`;
+
+                        // Show Home button and extra message when completed or in error state
+                        if (status.status === "completed" || status.status === "error") {
+                            homeButton.style.display = "block";
+                            extraMessage.style.display = "block";
+                        } else {
+                            // Continue polling if in progress
+                            setTimeout(checkStatus, 1000); // Poll every second
+                        }
+                    } catch (error) {
+                        statusDiv.innerText = `Error fetching status: ${error.message}`;
+                        homeButton.style.display = "block";
+                    }
+                }
+
+                // Start polling after page load
+                checkStatus();
+            </script>
+        </div>
+    </div>
+</body>
+
+</html>

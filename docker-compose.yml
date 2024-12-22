@@ -95,38 +95,36 @@ services:
             - redis
             - router
 
-
-
     # Hadoop Namenode
-    hadoop-namenode:
-        image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
-        container_name: hadoop-namenode
-        environment:
-            - CLUSTER_NAME=hadoop-cluster
-        ports:
-            - "9870:9870" # HDFS Web UI
-            - "9000:9000" # HDFS Namenode RPC
-        volumes:
-            - type: bind
-              source: ./hadoop/data
-              target: /hadoop/data
-        networks:
-            - data-center-network
+    # hadoop-namenode:
+    #     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    #     container_name: hadoop-namenode
+    #     environment:
+    #         - CLUSTER_NAME=hadoop-cluster
+    #     ports:
+    #         - "9870:9870" # HDFS Web UI
+    #         - "9000:9000" # HDFS Namenode RPC
+    #     volumes:
+    #         - type: bind
+    #           source: ./hadoop/data
+    #           target: /hadoop/data
+    #     networks:
+    #         - data-center-network
 
     # Hadoop Datanode
-    hadoop-datanode:
-        image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
-        container_name: hadoop-datanode
-        depends_on:
-            - hadoop-namenode
-        environment:
-            - CLUSTER_NAME=hadoop-cluster
-        volumes:
-            - type: bind
-              source: ./hadoop/data
-              target: /hadoop/data
-        networks:
-            - data-center-network
+    # hadoop-datanode:
+    #     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    #     container_name: hadoop-datanode
+    #     depends_on:
+    #         - hadoop-namenode
+    #     environment:
+    #         - CLUSTER_NAME=hadoop-cluster
+    #     volumes:
+    #         - type: bind
+    #           source: ./hadoop/data
+    #           target: /hadoop/data
+    #     networks:
+    #         - data-center-network
 
     # Redis
     redis:
@@ -138,7 +136,7 @@ services:
             - data-center-network
         volumes:
             - redis-data:/data
-        command: ["redis-server", "--appendonly", "yes"]
+        command: [ "redis-server", "--appendonly", "yes" ]
 
 networks:
     data-center-network:

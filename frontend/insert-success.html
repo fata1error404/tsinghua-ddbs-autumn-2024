@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Insert success </title>
+
+    <style>
+        .button {
+            position: absolute;
+            left: calc(50% - 7.5rem);
+            top: 47rem;
+            width: 15rem;
+            border: none;
+            border-radius: 1rem;
+            padding: 1rem 2rem;
+
+            font-size: 1.5rem;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <div
+            style="display: flex; flex-direction: column; align-items: center; width: 26rem; height: 50rem; border: 0.6rem solid #f0f0f0; border-radius: 3rem; margin-top: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-top: 3rem;">
+                <p style="font-size: 2rem; font-weight: 700;"> SUCCESS </p>
+                <i class="fa fa-check"
+                    style="color: grey; font-size: 2.5rem; border: 0.2rem solid black; border-radius: 50%;"></i>
+            </div>
+
+            <div id="type"> </div>
+            <div id="data"> </div>
+
+            <button class="button" id="home"> Home </button>
+
+            <script type="text/javascript">
+                document.getElementById("home").onclick = function () {
+                    location.href = "http://localhost:3000/";
+                };
+            </script>
+        </div>
+</body>
+
+</html>

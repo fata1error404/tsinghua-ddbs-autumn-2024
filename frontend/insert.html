@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Insert Data </title>
+</head>
+
+<body>
+    <div>
+        <!-- INSERT into.. -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2rem;">
+            <label for="types" style="font-size: 1.3rem;"> Select table </label>
+            <select id="table_type" class="select" name="table_type">
+                <option value="" selected> Not selected </option>
+                <option value="user"> User </option>
+                <option value="article"> Article </option>
+                <option value="read"> Read </option>
+            </select>
+        </div>
+
+
+
+        <!-- USER TABLE -->
+        <div id="user_info" class="hidden">
+            <form id="user_form" method="POST" action="/insert-user">
+                <div style="font-size: 1.3rem; margin-top: 1.5rem;"> Fill the User information </div>
+
+                <div style="margin-top: 1rem; margin-bottom: 0.3rem;"> Name <span class="required"> * </span> </div>
+
+
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 2rem">
+                    <input id="name_input" class="input" name="name" required placeholder="Enter text">
+                    <select class="select" name="gender" style="height: 2.7rem;" required>
+                        <option value="" selected> Gender </option>
+                        <option value="Male"> Male </option>
+                        <option value="Female"> Female </option>
+                    </select>
+                </div>
+
+                <div style="margin-top: 1rem; margin-bottom: 0.3rem;"> Email </div>
+                <input id="email_input" class="input" name="email" value="" placeholder="Enter text">
+
+                <div style="margin-top: 1rem; margin-bottom: 0.3rem;"> Phone number </div>
+                <input id="phone_input" class="input" name="phone" value="" placeholder="Enter text"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <select class="select" name="language" style="height: 2.7rem; margin-top: 1rem;" required>
+                        <option value="" selected> Language </option>
+                        <option value="en"> English </option>
+                        <option value="zh"> Chinese </option>
+                    </select>
+
+                    <select class="select" name="region" style="height: 2.7rem; margin-top: 1rem;" required>
+                        <option value="" selected> Region </option>
+                        <option value="Beijing"> Beijing </option>
+                        <option value="Hong Kong"> Hong Kong </option>
+                    </select>
+                </div>
+
+                <button class="button" id="user_submit" type="submit" disabled> Execute </button>
+            </form>
+        </div>
+
+
+        <!-- ARTICLE TABLE -->
+        <div id="article_info" class="hidden">
+            <form id="article_form" method="POST" action="/insert-article">
+                <div style="font-size: 1.3rem; margin-top: 1.5rem;"> Fill the Article information </div>
+
+                <div style="margin-top: 1rem; margin-bottom: 0.3rem;"> Title <span class="required"> * </span> </div>
+                <input id="title_input" class="input" name="title" required placeholder="Enter text">
+
+                <div style="margin-top: 1rem; margin-bottom: 0.3rem;"> Abstract <span class="required"> * </span> </div>
+                <input id="abstract_input" class="input" name="abstract" required placeholder="Enter text">
+
+                <div style="margin-top: 1rem; margin-bottom: 0.3rem;"> Authors <span class="required"> * </span> </div>
+                <input id="authors_input" class="input" name="authors" value="" placeholder="Enter text">
+
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <select class="select" name="language" style="height: 2.7rem; margin-top: 1rem;" required>
+                        <option value="" selected> Language </option>
+                        <option value="en"> English </option>
+                        <option value="zh"> Chinese </option>
+                    </select>
+
+                    <select class="select" name="category" style="height: 2.7rem; margin-top: 1rem;" required>
+                        <option value="" selected> Category </option>
+                        <option value="science"> Science </option>
+                        <option value="technology"> Technology </option>
+                    </select>
+                </div>
+
+                <div style="margin-top: 1.5rem ;">
+                    <label for="txt_file"> Attach Text File: </label>
+                    <input type="file" id="txt_file" name="text" accept=".txt" value="">
+                </div>
+
+                <div style="margin-top: 1rem ;">
+                    <label for="jpg_file"> Attach JPG File: </label>
+                    <input type="file" id="jpg_file" name="image" accept=".jpg" value="">
+                </div>
+                <div style="margin-top: 1rem ;">
+                    <label for="flv_file"> Attach FLV File: </label>
+                    <input type="file" id="flv_file" name="video" accept=".flv" value="">
+                </div>
+
+                <button class="button" id="article_submit" type="submit" disabled> Execute </button>
+            </form>
+        </div>
+
+
+        <!-- READ TABLE -->
+        <div id="read_info" class="hidden">
+            <form id="read_form" method="POST" action="/insert-read">
+                <div style="font-size: 1.3rem; margin-top: 1.5rem;"> Fill the Read information </div>
+
+                <div style="margin-top: 1rem; margin-bottom: 0.3rem;"> Reading time <span class="required"> * </span>
+                </div>
+                <input id="time_input" class="input" name="readTimeLength" type="text" required
+                    placeholder="Enter time in seconds" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem;">
+                    <div> Like it? </div>
+                    <select class="select" name="agreeOrNot" style="height: 2.7rem;" required>
+                        <option value="" selected> Not selected </option>
+                        <option value="1"> Yes </option>
+                        <option value="0"> No </option>
+                    </select>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem;">
+                    <div> Comment it? </div>
+                    <select class="select" name="commentOrNot" style="height: 2.7rem;" required>
+                        <option value="" selected> Not selected </option>
+                        <option value="1"> Yes </option>
+                        <option value="0"> No </option>
+                    </select>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem;">
+                    <div> Share it? </div>
+                    <select class="select" name="shareOrNot" style="height: 2.7rem;" required>
+                        <option value="" selected> Not selected </option>
+                        <option value="1"> Yes </option>
+                        <option value="0"> No </option>
+                    </select>
+                </div>
+
+                <button class="button" id="read_submit" type="submit" disabled> Execute </button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

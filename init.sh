@@ -108,28 +108,31 @@ docker exec -it router sh -c "mongoimport -d data-center -c Read < /app/data/rea
 echo -e "\n$(tput dim)Popular-Rank$(tput sgr 0)"
 docker exec -it router mongosh /app/scripts/init-popular-rank.js
 
+
 echo -e "\n$(tput bold dim)Shard distribution info:$(tput sgr 0)"
 docker exec -it router mongosh --eval "db.getSiblingDB('data-center').getCollection('Popular-Rank').getShardDistribution()"
 
+
+
 # Initializing Hadoop
-echo -e "\n\n$(tput bold dim)Initializing Hadoop HDFS.. $(tput sgr 0)"
-echo -e "$(tput bold)Formatting Namenode..$(tput sgr 0)"
-docker exec -it hadoop-namenode bash -c "hdfs namenode -format"
+# echo -e "\n\n$(tput bold dim)Initializing Hadoop HDFS.. $(tput sgr 0)"
+# echo "$(tput bold)Formatting Namenode..$(tput sgr 0)"
+# docker exec -it hadoop-namenode bash -c "hdfs namenode -format"
 
-echo -e "$(tput bold)Starting Namenode and Datanode..$(tput sgr 0)"
-docker exec -it hadoop-namenode bash -c "hdfs namenode &"
-docker exec -it hadoop-datanode bash -c "hdfs datanode &"
+# echo "$(tput bold)Starting Namenode and Datanode..$(tput sgr 0)"
+# docker exec -it hadoop-namenode bash -c "hdfs namenode &"
+# docker exec -it hadoop-datanode bash -c "hdfs datanode &"
 
-sleep 10
+# sleep 10
 
-echo -e "$(tput bold dim)Verifying HDFS status..$(tput sgr 0)"
-docker exec -it hadoop-namenode bash -c "hdfs dfsadmin -report"
+# echo "$(tput bold dim)Verifying HDFS status..$(tput sgr 0)"
+# docker exec -it hadoop-namenode bash -c "hdfs dfsadmin -report"
 
-echo -e "$(tput bold dim)Creating HDFS directories..$(tput sgr 0)"
-docker exec -it hadoop-namenode bash -c "hdfs dfs -mkdir -p /data"
+# echo "$(tput bold dim)Creating HDFS directories..$(tput sgr 0)"
+# docker exec -it hadoop-namenode bash -c "hdfs dfs -mkdir -p /data"
 
-echo -e "$(tput bold dim)Uploading example data to HDFS..$(tput sgr 0)"
-docker exec -it hadoop-namenode bash -c "hdfs dfs -put /hadoop/data/example.txt /data"
+# echo "$(tput bold dim)Uploading example data to HDFS..$(tput sgr 0)"
+# docker exec -it hadoop-namenode bash -c "hdfs dfs -put /hadoop/data/example.txt /data"
 
 echo -e "\n\n$(tput setaf 2)Initialization DONE$(tput sgr 0)"
 echo "$(tput setaf 2 bold)MongoDB Sharded Cluster and Apache Hadoop HDFS are ready and running on your local machine!$(tput sgr 0)"

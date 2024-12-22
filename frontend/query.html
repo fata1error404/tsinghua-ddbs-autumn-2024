@@ -6,21 +6,201 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Query </title>
+
+    <style>
+        .button {
+            position: absolute;
+            left: calc(50% - 7.5rem);
+            top: 47rem;
+            width: 15rem;
+            border: none;
+            border-radius: 1rem;
+            padding: 1rem 2rem;
+
+            font-size: 1.5rem;
+        }
+
+        .back_button {
+            background-color: transparent;
+            position: relative;
+            top: 1rem;
+            right: -9.5rem;
+            width: 4rem;
+            height: 4rem;
+            border: none;
+            border-radius: 50%;
+        }
+
+        .select {
+            background-color: #f0f0f0;
+            width: 9rem;
+            height: 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            outline: none;
+            padding-left: 0.5rem;
+        }
+
+        .input {
+            background-color: #f0f0f0 !important;
+            width: 95%;
+            height: 2.7rem;
+            border: none;
+            border-radius: 0.7rem;
+            outline: none;
+            padding-left: 1rem;
+
+            font-size: 1rem;
+        }
+
+        input:-webkit-autofill {
+            background-color: #f0f0f0 !important;
+            -webkit-box-shadow: 0 0 0 1000px #f0f0f0 inset;
+        }
+
+        .required {
+            color: red;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
 <body>
     <div style="display: flex; flex-direction: column; align-items: center;">
         <div
             style="display: flex; flex-direction: column; align-items: center; width: 26rem; height: 50rem; border: 0.6rem solid #f0f0f0; border-radius: 3rem; margin-top: 2rem;">
-            <p style="font-size: 2rem; font-weight: 700; margin-top: 3rem;"> Query </p>
+            <button class="back_button" id="back">
+                <i class="fa fa-arrow-left" style="color: #f0f0f0; font-size: 2.5rem;"></i>
+            </button>
 
-            <div style="margin-right: auto; padding-left: 1.5rem; margin-top: -2rem;">
-                <p style="font-size: 1.3rem;"> Select a query type: </p>
+            <script type="text/javascript">
+                document.getElementById("back").onclick = function () {
+                    location.href = "http://localhost:3000/";
+                };
+            </script>
 
-                </divdiv>
+            <p style="font-size: 2rem; font-weight: 700; margin-top: -1rem;"> Query </p>
+
+            <div
+                style="margin-right: auto; padding-left: 1.5rem; padding-right: 1.5rem; margin-top: -2rem; width: 90%;">
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2rem;">
+                    <label for="types" style="font-size: 1.3rem;"> Select type of query </label>
+                    <select id="query_type" name="query_type"
+                        style="background-color: #f0f0f0; width: 9rem; height: 2rem; border: none; border-radius: 0.5rem; outline: none; padding-left: 0.5rem;">
+                        <option value="" selected> Not selected </option>
+                        <option value="insert"> INSERT </option>
+                        <option value="update"> UPDATE </option>
+                        <option value="populate"> Update Be-Read </option>
+                    </select>
+                </div>
+
+                <div id="insert_div" class="hidden"> </div>
+                <div id="populate_div" class="hidden">
+                    <div style="margin-top: 1rem;"> Update the data in Be-Read table by inserting newly computed
+                        records. </div>
+                    <button class="button" id="populate_submit"> Execute </button>
+                </div>
+
+                <script type="text/javascript">
+                    document.getElementById("populate_submit").onclick = function () {
+                        location.href = "http://localhost:3000/populate-be-read";
+                    };
+                </script>
+
+                <script>
+                    document.getElementById('query_type').addEventListener('change', function () {
+                        const queryType = this.value;
+                        const insertDiv = document.getElementById('insert_div');
+                        const populateDiv = document.getElementById('populate_div');
+
+                        if (queryType === 'insert') {
+                            fetch('/insert')
+                                .then(response => response.text())
+                                .then(data => {
+                                    insertDiv.innerHTML = data;
+                                    insertDiv.classList.remove('hidden');
+                                    populateDiv.classList.add('hidden');
+
+                                    const tableTypeSelect = document.getElementById('table_type');
+                                    if (tableTypeSelect) {
+                                        tableTypeSelect.addEventListener('change', function () {
+                                            const tableType = this.value;
+                                            const sections = ['user_info', 'article_info', 'read_info'];
+
+                                            sections.forEach((section) => {
+                                                const sectionDiv = document.getElementById(section);
+                                                sectionDiv.classList.toggle('hidden', section !== `${tableType}_info`);
+                                            });
+
+                                            validateActiveForm();
+                                        });
+                                    }
+
+                                    const validateActiveForm = () => {
+                                        const activeContainer = insertDiv.querySelector('#user_info:not(.hidden), #article_info:not(.hidden), #read_info:not(.hidden)');
+                                        const activeForm = activeContainer ? activeContainer.querySelector('form') : null;
+
+                                        if (!activeForm) return;
+
+                                        const submitButton = activeContainer.querySelector('button[type="submit"]');
+                                        if (!activeForm) {
+                                            if (submitButton) submitButton.disabled = true;
+                                            return;
+                                        }
+
+                                        const requiredFields = activeForm.querySelectorAll('[required]');
+                                        let allFieldsValid = true;
+
+                                        requiredFields.forEach(field => {
+                                            if (
+                                                (field.tagName === 'SELECT' && field.value === '') ||
+                                                (field.type === 'file' && !field.files.length) ||
+                                                (field.type !== 'file' && field.value.trim() === '')
+                                            ) {
+                                                allFieldsValid = false;
+                                            }
+                                        });
+
+                                        if (submitButton) {
+                                            submitButton.disabled = !allFieldsValid;
+                                        }
+                                    };
+
+                                    const attachFieldListeners = () => {
+                                        const allFields = insertDiv.querySelectorAll('input[required], select[required]');
+                                        allFields.forEach(field => {
+                                            field.addEventListener('input', validateActiveForm);
+                                            field.addEventListener('change', validateActiveForm);
+                                        });
+                                    };
+
+                                    attachFieldListeners();
+                                    validateActiveForm();
+                                })
+                                .catch(error => console.error('Error loading insert.html:', error));
+                        } else if (queryType === 'populate') {
+                            populateDiv.classList.remove('hidden');
+                            insertDiv.classList.add('hidden');
+                            insertDiv.innerHTML = '';
+                        } else {
+                            insertDiv.classList.add('hidden');
+                            insertDiv.innerHTML = '';
+                            populateDiv.classList.add('hidden');
+                        }
+                    });
+                </script>
+
 
             </div>
+
         </div>
+    </div>
 </body>
 
 </html>
