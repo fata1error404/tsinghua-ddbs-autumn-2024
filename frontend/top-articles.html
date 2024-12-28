@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Top Articles </title>
+</head>
+
+<body>
+    <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2rem;">
+            <label for="granularity_type" style="font-size: 1.3rem;">Select time
+                period</label>
+            <select id="granularity_type" class="select" name="granularity_type">
+                <option value="" selected>Not selected</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
+        </div>
+
+        <form id="top_articles_form" method="POST" action="/top-articles">
+            <div id="input_container" class="hidden" style="margin-top: 1.5rem;">
+                <label id="input_label" for="time_input"> </label>
+                <input id="time_input" class="input" name="" value="" required placeholder="Enter day"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '');" style="margin-top: 0.3rem;">
+            </div>
+
+            <button class="button" id="top_articles_submit" type="submit" disabled> Execute </button>
+        </form>
+    </div>
+</body>
+
+</html>

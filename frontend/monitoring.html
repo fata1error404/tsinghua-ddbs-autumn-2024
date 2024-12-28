@@ -57,17 +57,19 @@
 
                     if (data.shard2.status === "ok" && data.shard2.status === "ok") {
                         document.getElementById("user").innerHTML = `
-                        <span style="color: grey"> Users: </span> ${data.user_docs} <span style="color: grey; font-size: 0.8rem; padding-left: 2.2rem;"> ${(data.shard1.tables.user_count / data.user_docs * 100).toFixed(2)}% in DBMS1 and ${(data.shard2.tables.user_count / data.user_docs * 100).toFixed(2)}% in DBMS2 </span>`;
+                        <span style="color: grey"> User: </span> ${data.user_docs} <span style="color: grey; font-size: 0.8rem; padding-left: 2.2rem;"> ${(data.shard1.tables.user_count / data.user_docs * 100).toFixed(2)}% in DBMS1 and ${(data.shard2.tables.user_count / data.user_docs * 100).toFixed(2)}% in DBMS2 </span>`;
 
                         document.getElementById("article").innerHTML = `
-                        <span style="color: grey"> Articles: </span> ${data.article_docs} <span style="color: grey; font-size: 0.8rem; padding-left: 1.3rem;"> ${(data.shard1.tables.article_count / data.article_docs * 100).toFixed(2)}% in DBMS1 and ${(data.shard2.tables.article_count / data.article_docs * 100).toFixed(2)}% in DBMS2 </span>`;
+                        <span style="color: grey"> Article: </span> ${data.shard2.tables.article_count} <span style="color: grey; font-size: 0.8rem; padding-left: 1.3rem;"> ${(data.shard1.tables.article_count / data.article_docs * 100).toFixed(2)}% in DBMS1 and ${(data.shard2.tables.article_count / data.article_docs * 100).toFixed(2)}% in DBMS2 </span>`;
 
                         document.getElementById("read").innerHTML = `
-                        <span style="color: grey"> Reads: </span> ${data.read_docs} <span style="color: grey; font-size: 0.8rem; padding-left: 1.1rem;"> ${(data.shard1.tables.read_count / data.read_docs * 100).toFixed(2)}% in DBMS1 and ${(data.shard2.tables.read_count / data.read_docs * 100).toFixed(2)}% in DBMS2 </span>`;
-
+                        <span style="color: grey"> Read: </span> ${data.read_docs} <span style="color: grey; font-size: 0.8rem; padding-left: 1.1rem;"> ${(data.shard1.tables.read_count / data.read_docs * 100).toFixed(2)}% in DBMS1 and ${(data.shard2.tables.read_count / data.read_docs * 100).toFixed(2)}% in DBMS2 </span>`;
 
                         document.getElementById("be_read").innerHTML = `
-                        <span style="color: grey"> Be-Reads: </span> ${data.be_read_docs} <span style="color: grey; font-size: 0.8rem; padding-left: 0.6rem;"> ${(data.shard1.tables.be_read_count / data.be_read_docs * 100).toFixed(2)}% in DBMS1 and ${(data.shard2.tables.be_read_count / data.be_read_docs * 100).toFixed(2)}% in DBMS2 </span>`;
+                        <span style="color: grey"> Be-Read: </span> ${data.be_read_docs} <span style="color: grey; font-size: 0.8rem; padding-left: 0.6rem;"> ${(data.shard1.tables.be_read_count / data.be_read_docs * 100).toFixed(2)}% in DBMS1 and ${(data.shard2.tables.be_read_count / data.be_read_docs * 100).toFixed(2)}% in DBMS2 </span>`;
+
+                        document.getElementById("popular_rank").innerHTML = `
+                        <span style="color: grey"> Popular-Rank: </span> ${data.popular_rank_docs} <span style="color: grey; font-size: 0.8rem; padding-left: 0.6rem;"> ${(data.shard1.tables.popular_rank_count / data.popular_rank_docs * 100).toFixed(2)}% in DBMS1 and ${(data.shard2.tables.popular_rank_count / data.popular_rank_docs * 100).toFixed(2)}% in DBMS2 </span>`;
                     }
 
                     document.getElementById("title1").style.display = "block";
@@ -144,7 +146,7 @@
                 <div id="article" style="margin-top: 0.2rem"> </div>
                 <div id="read" style="margin-top: 0.2rem"> </div>
                 <div id="be_read" style="margin-top: 0.2rem"> </div>
-                <div id="popular_rank" style="color: grey; margin-top: 0.2rem"> Popular rank: </div>
+                <div id="popular_rank" style="margin-top: 0.2rem"> </div>
             </div>
         </div>
     </div>

@@ -33,13 +33,7 @@
                 wait. </div>
             <div id="status_div" style="width: 80%; font-size: 1.3rem; margin-top: 1rem;"></div>
 
-            <div id="extra_message" style="margin-top: 1rem; text-align: center; display: none;">
-                <p>Population process completed successfully! You can return to the homepage by clicking the button
-                    below.
-                </p>
-            </div>
-
-            <button class="button" id="home"> Home </button>
+            <button class="button" id="home" style="display: none;"> Home </button>
 
             <script type="text/javascript">
                 document.getElementById("home").onclick = function () {
@@ -48,7 +42,6 @@
 
                 const statusDiv = document.getElementById("status_div");
                 const homeButton = document.getElementById("home");
-                const extraMessage = document.getElementById("extra_message");
 
                 async function checkStatus() {
                     try {
@@ -62,7 +55,6 @@
                         // Show Home button and extra message when completed or in error state
                         if (status.status === "completed" || status.status === "error") {
                             homeButton.style.display = "block";
-                            extraMessage.style.display = "block";
                         } else {
                             // Continue polling if in progress
                             setTimeout(checkStatus, 1000); // Poll every second

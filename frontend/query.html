@@ -95,8 +95,8 @@
                         style="background-color: #f0f0f0; width: 9rem; height: 2rem; border: none; border-radius: 0.5rem; outline: none; padding-left: 0.5rem;">
                         <option value="" selected> Not selected </option>
                         <option value="insert"> INSERT </option>
-                        <option value="update"> UPDATE </option>
                         <option value="populate"> Update Be-Read </option>
+                        <option value="top_articles"> Top articles </option>
                     </select>
                 </div>
 
@@ -106,6 +106,8 @@
                         records. </div>
                     <button class="button" id="populate_submit"> Execute </button>
                 </div>
+
+                <div id="top_articles_div" class="hidden"> </div>
 
                 <script type="text/javascript">
                     document.getElementById("populate_submit").onclick = function () {
@@ -118,6 +120,11 @@
                         const queryType = this.value;
                         const insertDiv = document.getElementById('insert_div');
                         const populateDiv = document.getElementById('populate_div');
+                        const topArticlesDiv = document.getElementById('top_articles_div');
+
+                        insertDiv.classList.add('hidden');
+                        populateDiv.classList.add('hidden');
+                        topArticlesDiv.classList.add('hidden');
 
                         if (queryType === 'insert') {
                             fetch('/insert')
@@ -125,7 +132,6 @@
                                 .then(data => {
                                     insertDiv.innerHTML = data;
                                     insertDiv.classList.remove('hidden');
-                                    populateDiv.classList.add('hidden');
 
                                     const tableTypeSelect = document.getElementById('table_type');
                                     if (tableTypeSelect) {
@@ -186,19 +192,59 @@
                                 .catch(error => console.error('Error loading insert.html:', error));
                         } else if (queryType === 'populate') {
                             populateDiv.classList.remove('hidden');
-                            insertDiv.classList.add('hidden');
-                            insertDiv.innerHTML = '';
-                        } else {
-                            insertDiv.classList.add('hidden');
-                            insertDiv.innerHTML = '';
-                            populateDiv.classList.add('hidden');
+                        } else if (queryType === 'top_articles') {
+                            fetch('/top-articles')
+                                .then(response => response.text())
+                                .then(data => {
+                                    topArticlesDiv.innerHTML = data;
+                                    topArticlesDiv.classList.remove('hidden');
+
+                                    const granularityTypeSelect = topArticlesDiv.querySelector('#granularity_type');
+                                    const inputContainer = topArticlesDiv.querySelector('#input_container');
+                                    const inputLabel = topArticlesDiv.querySelector('#input_label');
+                                    const timeInput = topArticlesDiv.querySelector('#time_input');
+                                    const submitButton = topArticlesDiv.querySelector('#top_articles_submit');
+
+                                    granularityTypeSelect.addEventListener('change', () => {
+                                        const selectedType = granularityTypeSelect.value;
+
+                                        if (selectedType) {
+                                            inputContainer.classList.remove('hidden');
+
+                                            if (selectedType === 'daily') {
+                                                inputLabel.innerHTML = 'Day (from 1 to 116) <span class="required"> * </span>';
+                                                timeInput.placeholder = 'Enter day';
+                                                timeInput.name = 'day';
+                                            } else if (selectedType === 'weekly') {
+                                                inputLabel.innerHTML = 'Week (from 1 to 17) <span class="required"> * </span>';
+                                                timeInput.placeholder = 'Enter week';
+                                                timeInput.name = 'week';
+                                            } else if (selectedType === 'monthly') {
+                                                inputLabel.innerHTML = 'Month (from 1 to 4) <span class="required"> * </span>';
+                                                timeInput.placeholder = 'Enter month';
+                                                timeInput.name = 'month';
+                                            }
+
+                                            const validateInput = () => {
+                                                const inputValue = timeInput.value.trim();
+                                                submitButton.disabled = !inputValue;
+                                            };
+
+                                            timeInput.addEventListener('input', validateInput);
+
+                                            validateInput();
+                                        } else {
+                                            inputContainer.classList.add('hidden');
+                                            submitButton.disabled = true;
+                                        }
+                                    });
+                                })
+                                .catch(error => console.error('Error loading top-articles:', error));
                         }
                     });
                 </script>
 
-
             </div>
-
         </div>
     </div>
 </body>

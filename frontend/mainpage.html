@@ -16,6 +16,16 @@
 
             font-size: 1.5rem;
         }
+
+        .description {
+            position: absolute;
+            width: 20rem;
+            margin-left: 1.1rem;
+            margin-top: -0.2rem;
+
+            font-size: 0.8rem;
+            line-height: 0.9rem;
+        }
     </style>
 
 </head>
@@ -43,28 +53,34 @@
                 };
             </script>
 
-            <p style="color: grey; width: 20rem; line-height: 1.4rem; margin-left: -2rem; margin-top: 5rem;">
+            <div style="color: grey; width: 20rem; line-height: 1.6rem; margin-left: -2rem; margin-top: 5rem;">
                 Implementation of a distributed data center </br> ( Tsinghua DDBS project )
                 </br>
                 </br>
                 Available functionality: </br>
                 1. Bulk load </br>
-                <span style="position: absolute; font-size: 0.8rem; margin-left: 1.2rem; margin-top: -0.3rem;">
-                    One time mass insert into User, Article, and Read tables
+                <span class="description">
+                    One time mass insert into User, Article, and Read tables, construction of Be-Read and Popular-Rank
+                    tables
                 </span>
                 </br>
                 2. Query execution </br>
-                <span style="position: absolute; font-size: 0.8rem; margin-left: 1.2rem; margin-top: -0.3rem;">
-                    insert, update, top-5 popular articles
+                <span class="description">
+                    insert, update read statistics, top-5 popular articles
                 </span>
                 </br>
                 3. Monitoring </br>
-                <span style="position: absolute; font-size: 0.8rem; margin-left: 1.2rem; margin-top: -0.3rem;">
-                    running status, managed data (amount and location), workload
+                <span class="description">
+                    running status, operations overview, resource memory usage, data distribution
                 </span>
                 </br>
-            </p>
-            <div style="margin-left: -6.5rem;"> ©2024 Ivan Iazykov, Guilherme Diogo</div>
+                4. Advanced features </br>
+                <span class="description">
+                    expansion allowing a new DBMS server to join; dropping a DBMS server at will
+                </span>
+            </div>
+
+            <div style="margin-left: -6.5rem; margin-top: 3rem;"> ©2024 Ivan Iazykov, Guilherme Diogo</div>
         </div>
     </div>
 </body>

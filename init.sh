@@ -9,9 +9,6 @@ docker compose up -d
 
 sleep 10
 
-# Verify Redis Connectivity
-echo -e "\n\n$(tput bold dim)Checking Redis connectivity..$(tput sgr 0)"
-docker exec -it redis redis-cli PING
 
 # MongoDB Replica Sets Initialization
 echo -e "\n\n$(tput bold dim)Initializing MongoDB replica sets.. $(tput sgr 0)"
@@ -44,6 +41,8 @@ docker exec -it shard-2a mongosh --eval "rs.initiate({
   ]
 })"
 
+
+# Check connectivity
 containers=("config-1" "config-2" "config-3" "shard-1a" "shard-1b" "shard-2a" "shard-2b")
 echo -e "\n\n$(tput bold dim)Checking connectivity..$(tput sgr 0)\n"
 for container in "${containers[@]}" 
@@ -52,9 +51,14 @@ do
   echo "$output"
 done
 
-echo -e "\n\n\n$(tput bold dim)Setting up router..$(tput sgr 0)"
+docker exec -it redis redis-cli PING | tr -d '\r' | awk -v container=redis '{print container "  ok : " ($1 == "PONG" ? 1 : $1)}'
+
+
+# Router setup
 sleep 10
+echo -e "\n\n\n$(tput bold dim)Setting up router..$(tput sgr 0)"
 docker exec -it router mongosh /app/scripts/init-tables.js
+
 
 # Loading data into tables
 echo -e "\n\n$(tput bold dim)Bulk loading data..$(tput sgr 0)"
@@ -67,15 +71,15 @@ echo "Duplicating category science into DBMS2.."
 docker exec -it router sh -c "jq 'select(.category == \"science\")' /app/data/article.dat > /app/data/filtered_article.dat"
 docker exec -it router sh -c "mongoimport -d data-center -c Article-science < /app/data/filtered_article.dat"
 
-# echo -e "\n$(tput dim)Read$(tput sgr 0)"
-# docker exec -it router mongosh /app/scripts/init-read.js
-# docker exec -it router sh -c "mongoimport -d data-center -c Read < /app/data/read_with_regions.dat"
+echo -e "\n$(tput dim)Read$(tput sgr 0)"
+docker exec -it router mongosh /app/scripts/init-read.js
+docker exec -it router sh -c "mongoimport -d data-center -c Read < /app/data/read_with_regions.dat"
 
-# # echo -e "\n$(tput dim)Be-Read$(tput sgr 0)"
-# # docker exec -it router mongosh /app/scripts/init-be-read.js
+echo -e "\n$(tput dim)Be-Read$(tput sgr 0)"
+docker exec -it router mongosh /app/scripts/init-be-read.js
 
-# echo -e "\n$(tput dim)Popular-Rank$(tput sgr 0)"
-# docker exec -it router mongosh /app/scripts/init-popular-rank.js
+echo -e "\n$(tput dim)Popular-Rank$(tput sgr 0)"
+docker exec -it router mongosh /app/scripts/init-popular-rank.js
 
 
 echo -e "\n$(tput bold dim)Shard distribution info:$(tput sgr 0)"
@@ -84,24 +88,25 @@ docker exec -it router mongosh --eval "db.getSiblingDB('data-center').getCollect
 
 
 # Initializing Hadoop
-# echo -e "\n\n$(tput bold dim)Initializing Hadoop HDFS.. $(tput sgr 0)"
-# echo "$(tput bold)Formatting Namenode..$(tput sgr 0)"
-# docker exec -it hadoop-namenode bash -c "hdfs namenode -format"
+echo -e "\n\n$(tput bold dim)Initializing Hadoop HDFS.. $(tput sgr 0)"
+echo "Formatting Namenode.."
+docker exec -i hadoop-namenode bash -c "printf 'Y\n' | hdfs namenode -format" > /dev/null 2>&1
 
-# echo "$(tput bold)Starting Namenode and Datanode..$(tput sgr 0)"
-# docker exec -it hadoop-namenode bash -c "hdfs namenode &"
-# docker exec -it hadoop-datanode bash -c "hdfs datanode &"
+echo "Starting Namenode and Datanode.."
+docker exec -it hadoop-namenode bash -c "hdfs namenode &"
+docker exec -it hadoop-datanode bash -c "hdfs datanode &"
 
-# sleep 10
+sleep 10
 
-# echo "$(tput bold dim)Verifying HDFS status..$(tput sgr 0)"
-# docker exec -it hadoop-namenode bash -c "hdfs dfsadmin -report"
+echo "Creating HDFS directories.."
+docker exec -it hadoop-namenode bash -c "hdfs dfs -mkdir -p /data"
 
-# echo "$(tput bold dim)Creating HDFS directories..$(tput sgr 0)"
-# docker exec -it hadoop-namenode bash -c "hdfs dfs -mkdir -p /data"
+echo "Uploading articles folder to HDFS.."
+docker exec -it hadoop-namenode bash -c "hdfs dfs -copyFromLocal /app /data"
 
-# echo "$(tput bold dim)Uploading example data to HDFS..$(tput sgr 0)"
-# docker exec -it hadoop-namenode bash -c "hdfs dfs -put /hadoop/data/example.txt /data"
+echo "Verifying HDFS status.."
+docker exec -it hadoop-namenode bash -c "hdfs dfsadmin -report"
+
 
 echo -e "\n\n$(tput setaf 2)Initialization DONE$(tput sgr 0)"
 echo "$(tput setaf 2 bold)MongoDB Sharded Cluster and Apache Hadoop HDFS are ready and running on your local machine!$(tput sgr 0)"
